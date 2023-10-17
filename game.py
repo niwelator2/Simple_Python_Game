@@ -7,9 +7,9 @@ pygame.init()
 # Constants
 WIDTH, HEIGHT = 800, 600
 PLAYER_WIDTH, PLAYER_HEIGHT = 60, 70
-PLATFORM_WIDTH, PLATFORM_HEIGHT = 50, 10
-JUMP_HEIGHT = 40
-GRAVITY = 3.5
+PLATFORM_WIDTH, PLATFORM_HEIGHT = 50, 20
+JUMP_HEIGHT = 15
+GRAVITY = 0.5
 
 # Colors
 WHITE = (255, 255, 255)
@@ -35,12 +35,17 @@ is_jumping = False
 
 # Create platforms for the first level
 platforms = [
-            (380, 400),
-            (270, 340), 
-            (500, 380),  
-            (150, 280),
-            (600, 450),
-        ]
+    (200, 500),  # Ground platform
+    (400, 500),  # Ground platform continuation
+    (600, 500),  # Ground platform continuation
+    (100, 300),  # Medium platform 1
+    (350, 400),  # Medium platform 2
+    (600, 300),  # Medium platform 3
+    (300, 180),  # Low platform 1
+    (500, 180),  # Low platform 2
+    (400, 100),  # Low platform 3
+    (200, 250),  # Medium platform 4
+]
 
 # Load the first background image
 try:
@@ -64,15 +69,12 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    #player speed 
-
+    # player speed
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and player_x > 0:
         player_x -= 3
     if keys[pygame.K_RIGHT] and player_x < WIDTH - PLAYER_WIDTH:
         player_x += 3
-
-    ###################
 
     if not is_jumping:
         if keys[pygame.K_SPACE]:
@@ -94,19 +96,19 @@ while running:
             print("Error loading background image for level 2.")
             sys.exit()
 
-        # Set up a ceiling platform for level 2
-        platforms = [
-            (200, 500),   # Ground platform with obstacles
-            (400, 500),   # Ground platform continuation
-            (600, 500),   # Ground platform continuation
-            (100, 0),     # Ceiling platform
-            (350, 0),     # Ceiling platform with gaps
-            (600, 0),     # Ceiling platform continuation
-            (300, 250),   # Center platform 1
-            (500, 250),   # Center platform 2
-            (400, 100),   # Center platform 3
-            (200, 300),   # Center platform 4
-        ]
+    # Set up platforms for level 2
+    platforms = [
+        (200, 500),  # Ground platform with obstacles
+        (400, 500),  # Ground platform continuation
+        (600, 500),  # Ground platform continuation
+        (100, 300),  # Medium platform 1
+        (350, 400),  # Medium platform 2
+        (600, 300),  # Medium platform 3
+        (300, 200),  # Low platform 1
+        (500, 200),  # Low platform 2
+        (400, 100),  # Low platform 3
+        (200, 250),  # Medium platform 4
+    ]
 
     # Check if the player reaches a certain height to transition to level 3
     if player_y < -200 and level_transition:
@@ -119,23 +121,42 @@ while running:
         except pygame.error:
             print("Error loading background image for level 3.")
             sys.exit()
-
+    # Set a flag for level transition
+    level_transition = False
         # Set up platforms for level 3
-        platforms = [
-            (0, 500),
-            (200, 500),  # Ground platform
-            (400, 500),  # Ground platform continuation
-            (600, 500),  # Ground platform continuation
-            (150, 300),  # Floating platform 1
-            (500, 300),  # Floating platform 2
-            (300, 200),  # Floating platform 3
-            (450, 100),  # Floating platform 4
-            (100, 100),  # Floating platform 5
-            (650, 50),   # Floating platform 6
-            (200, 0),    # Ceiling platform
-            (400, 0),    # Ceiling platform continuation
-            (600, 0),    # Ceiling platform continuation
-        ]
+    platforms = [
+        (0, 500),
+        (200, 500),  # Ground platform
+        (400, 500),  # Ground platform continuation
+        (600, 500),  # Ground platform continuation
+        (150, 300),  # Floating platform 1
+        (500, 300),  # Floating platform 2
+        (300, 200),  # Floating platform 3
+        (450, 100),  # Floating platform 4
+        (100, 100),  # Floating platform 5
+        (650, 50),   # Floating platform 6
+        (200, 0),    # Ceiling platform
+        (400, 0),    # Ceiling platform continuation
+        (600, 0),    # Ceiling platform continuation
+    ]
+    # Check if the player collects the star
+    star_image = pygame.image.load("star.png").convert_alpha()
+    star_image = pygame.transform.scale(star_image, (50, 50))
+    star_position = (400, 30)  # Adjust the star's position
+
+    # Inside the game loop, after drawing the platforms, add the following code to display the star:
+    screen.blit(star_image, star_position)
+
+    # Check if the player collects the star
+    star_position = (400, 30)  # Adjust the star's position
+    if (
+        player_x + PLAYER_WIDTH > star_position[0]
+        and player_x < star_position[0] + 20
+        and player_y < star_position[1] + 20
+    ):
+        # The player collected the star, end the game
+        print("Congratulations! You collected the star and completed the game.")
+        running = False
 
     for platform_x, platform_y in platforms:
         if (
@@ -163,7 +184,7 @@ while running:
         pygame.draw.rect(screen, (0, 255, 0), (platform_x, platform_y, PLATFORM_WIDTH, PLATFORM_HEIGHT))
 
     screen.blit(player_image, (player_x, player_y))
-    
+
     # Display the timer in the top-right corner
     screen.blit(timer_text, (WIDTH - timer_text.get_width() - 10, 10))
 
